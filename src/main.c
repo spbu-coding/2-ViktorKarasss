@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include <string.h>
 #include <stdbool.h>
 
 #define errprintf(...) fprintf(stderr, __VA_ARGS__)
@@ -35,7 +34,18 @@ struct validated_input{
     int exit_code;
 };
 
-void bubble_sort(int *array, int array_size);
+void bubble_sort(int *array, int array_size){
+    for(int i = 0 ; i < array_size - 1; i++) {
+        for(int j = 0 ; j < array_size - i - 1 ; j++) {
+            if(array[j] > array[j+1]) {
+                int tmp = array[j];
+                array[j] = array[j+1] ;
+                array[j+1] = tmp;
+            }
+        }
+    }
+}
+
 int calculate_changed_pos(const int *sorted_array, const int *not_sorted_array,int size){
     int cnt = 0;
     for(int i = 0; i < size; i++){
@@ -47,9 +57,8 @@ int calculate_changed_pos(const int *sorted_array, const int *not_sorted_array,i
 }
 
 
-bool is_border_correct(char *border){
-    return !(border == NULL) ;
-
+bool is_border_correct(const char *border){
+    return !(border == NULL);
 }
 
 
@@ -86,7 +95,7 @@ struct command_line_arg parse_command_line_input(int argc, char *argv[]){
 
 }
 
-struct validated_input validate_command_line_input(struct command_line_arg arguments){
+struct validated_input validate_command_line_input(struct command_line_arg arguments, int argc){
     struct borders borders = {0,0, false,false};
     struct validated_input input = {borders, 0};
 
@@ -105,11 +114,12 @@ struct validated_input validate_command_line_input(struct command_line_arg argum
     if(arguments.count_from_arg == 1){
         input.borders.have_from = true;
     }
-    if(arguments.count_from_arg == 0 && arguments.count_to_arg == 0){
+    if(arguments.count_from_arg == 0 && arguments.count_to_arg == 0 && argc == 2){
         input.exit_code = -4;
     }
-
-    if((is_border_correct(arguments.from) && arguments.count_from_arg) && !is_border_correct(arguments.to)){
+    if(!is_border_correct(arguments.from) && !is_border_correct(arguments.to)){
+    }
+    else if((is_border_correct(arguments.from) && arguments.count_from_arg) && !is_border_correct(arguments.to)){
         input.borders.from = strtol(arguments.from,&arguments.from,10);
     }
     else if(!is_border_correct(arguments.from) && (is_border_correct(arguments.to) && arguments.count_to_arg)){
@@ -125,7 +135,7 @@ struct validated_input validate_command_line_input(struct command_line_arg argum
 
 struct validated_input command_line_input(int argc, char *argv[]){
     struct command_line_arg arguments = parse_command_line_input(argc, argv);
-    return validate_command_line_input(arguments);
+    return validate_command_line_input(arguments, argc);
 }
 
 struct array_sizes std_input(struct borders borders, int *std_array,int *err_array, int *sorted_array,int *not_sorted_array){
