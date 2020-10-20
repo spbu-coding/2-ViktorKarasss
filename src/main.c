@@ -86,7 +86,7 @@ struct validated_input validate_command_line_input(struct command_line_arg argum
     if(!arguments.have_arg){
         input.exit_code = -1;
     }
-    if(argc > 2){
+    if(argc > 3){
         input.exit_code = -2;
     }
     if(arguments.count_to_arg > 1 || arguments.count_from_arg > 1){
@@ -165,11 +165,11 @@ int main(int argc, char *argv[]) {
     int sorted_array[MAX_LEN_INPUT];
     int std_array[MAX_LEN_INPUT];
     int err_array[MAX_LEN_INPUT];
-    struct array_sizes sizes = std_input(borders, &std_array[MAX_LEN_INPUT], &err_array[MAX_LEN_INPUT],
-            &sorted_array[MAX_LEN_INPUT],&not_sorted_array[MAX_LEN_INPUT]);
-    std_output(&std_array[MAX_LEN_INPUT], sizes.stdout_size);
-    err_output(&err_array[MAX_LEN_INPUT], sizes.err_size);
-    bubble_sort( &sorted_array[MAX_LEN_INPUT], sizes.not_sorted_array_size);
-    return calculate_changed_pos(&sorted_array[MAX_LEN_INPUT],&not_sorted_array[MAX_LEN_INPUT],
+    struct array_sizes sizes = std_input(borders, std_array, err_array,
+            sorted_array,not_sorted_array);
+    std_output(std_array, sizes.stdout_size);
+    err_output(err_array, sizes.err_size);
+    bubble_sort( sorted_array, sizes.not_sorted_array_size);
+    return calculate_changed_pos(sorted_array,not_sorted_array,
                                  sizes.not_sorted_array_size);
 }
