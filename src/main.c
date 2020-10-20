@@ -123,7 +123,7 @@ struct validated_input command_line_input(int argc, char *argv[]){
 struct array_sizes std_input(struct borders borders, int *std_array,int *err_array, int *sorted_array,int *not_sorted_array){
     int num;
     int std_array_ind = 0, err_array_ind = 0,not_sorted_array_ind = 0;
-    while(scanf("%d", &num)){
+    while(scanf("%d", &num) == 1){
         if(borders.have_from && num <= borders.from){
             std_array[std_array_ind] = num;
             std_array_ind++;
