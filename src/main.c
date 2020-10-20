@@ -33,17 +33,7 @@ struct validated_input{
     int exit_code;
 };
 
-void bubble_sort(int *array, int array_size){
-    for(int i = 0 ; i < array_size - 1; i++) {
-        for(int j = 0 ; j < array_size - i - 1 ; j++) {
-            if(array[j] > array[j+1]) {
-                int tmp = array[j];
-                array[j] = array[j+1] ;
-                array[j+1] = tmp;
-            }
-        }
-    }
-}
+void bubble_sort(int *array, int array_size);
 
 int calculate_changed_pos(const int *sorted_array, const int *not_sorted_array,int size){
     int cnt = 0;
