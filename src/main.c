@@ -57,6 +57,8 @@ struct command_line_arg parse_command_line_input(int argc, char *argv[]){
             {0,0,0,0},
     };
     int long_index;
+    opterr = 0;
+    optind = 1;
     int opt = getopt_long( argc, argv, "f:t:", long_opt, &long_index );
     while(opt != -1){
         switch (opt) {
