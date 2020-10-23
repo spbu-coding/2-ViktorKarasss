@@ -20,13 +20,15 @@ int __real_main();
 
 #define array_length(x) (sizeof(x) / sizeof((x)[0]))
 
+//extern int example_main(int argc, char *argv[]);
+//
+//int example_test_fprintf(FILE* file, const char *format, ...) CMOCKA_PRINTF_ATTRIBUTE(2, 3);
+//int __wrap_printf(const char *format, ...) CMOCKA_PRINTF_ATTRIBUTE(1, 2);
+
 static char temporary_buffer[256];
 static char temporary_buffer_stdout[256];
 static char temporary_buffer_stderr[256];
-static int num_of_test;
-static int test_input1[] = {2, 4, 1, 5, 8, 4};
-static int test_input2[] = {4, 7, 10, 5, 1, 6, 8};
-static int idx;
+static FILE *__test_stdin_file;
 
 /* A mock fprintf function that checks the value of strings printed to the
  * standard error stream or output stream. */
@@ -77,24 +79,15 @@ int __wrap_printf(const char *format, ...) {
 }
 
 int __wrap_scanf(const char *format, ...) {
+    int return_value;
     va_list args;
     va_start(args, format);
-    switch (num_of_test) {
-        case 1: *va_arg(args, int*) = test_input1[idx++];
-            if (array_length(test_input1) == idx) *va_arg(args, char*) = '\n';
-            break;
-        case 2: *va_arg(args, int*) = test_input2[idx++];
-            if (array_length(test_input2) == idx) *va_arg(args, char*) = '\n';
-            break;
-        default: 
-            va_end(args);
-	     return -1;
-    }
 
+    return_value = vfscanf(__test_stdin_file, format, args);
     va_end(args);
-    return 1; // TODO: Return proper count
-}
+    return return_value;
 
+    }
 
 int __wrap___isoc99_scanf(const char *restrict format, ...) {
      void *args = __builtin_apply_args();
@@ -123,8 +116,11 @@ static void test_example_main_many_args(void **state) {
 }
 
 static void test_main_1(void **state) {
-    num_of_test = 1;
-    idx = 0;
+    __test_stdin_file = NULL;
+    if ((__test_stdin_file = fopen("data/test1.txt", "r")) == NULL) {
+        printf("Cannot open file.\n");
+        exit(1);
+    }
     const char *args[] = {
             "example", "--from=3",
     };
@@ -133,13 +129,17 @@ static void test_main_1(void **state) {
 
     expect_string(__wrap_fprintf, temporary_buffer_stdout, "2");
     expect_string(__wrap_fprintf, temporary_buffer_stdout, "1");
-
+    //expect_string(__wrap_printf, temporary_buffer, "3");
     assert_int_equal(__real_main(array_length(args), args), 3);
+    if (__test_stdin_file != NULL) fclose(__test_stdin_file);
 }
 
 static void test_main_2(void **state){
-    num_of_test = 2;
-    idx = 0;
+    __test_stdin_file = NULL;
+    if ((__test_stdin_file = fopen("data/test2.txt", "r")) == NULL) {
+        printf("Cannot open file.\n");
+        exit(1);
+    }
     const char *args[] = {
             "example", "--to=9", "--from=3"
     };
@@ -150,6 +150,7 @@ static void test_main_2(void **state){
     expect_string(__wrap_fprintf, temporary_buffer_stdout, "1");
 
     assert_int_equal(__real_main(array_length(args), (char **) args), 3);
+    if (__test_stdin_file != NULL) fclose(__test_stdin_file);
 }
 
 int __wrap_main()
@@ -161,6 +162,6 @@ int __wrap_main()
             cmocka_unit_test(test_main_2),
     };
 
+    if (__test_stdin_file != NULL) fclose(__test_stdin_file);
     return cmocka_run_group_tests(tests, NULL, NULL);
 }
-
