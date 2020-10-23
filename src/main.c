@@ -84,9 +84,11 @@ struct command_line_arg parse_command_line_input(int argc, char *argv[]){
 struct validated_input validate_command_line_input(struct command_line_arg arguments, int argc){
     struct borders borders = {0,0, false,false};
     struct validated_input input = {borders, 0};
-
-    if(!arguments.have_arg){
+    if(argc == 1){
         input.exit_code = -1;
+    }
+    if(!arguments.have_arg && argc == 3){
+        input.exit_code = -4;
     }
     if(argc > 3){
         input.exit_code = -2;
@@ -126,16 +128,20 @@ struct array_sizes std_input(struct borders borders, int *std_array,int *err_arr
     int num;
     int std_array_ind = 0, err_array_ind = 0,not_sorted_array_ind = 0;
     while(scanf("%d", &num) == 1){
+        bool flag_from = true;
+        bool flag_to = true;
         if(borders.have_from && num <= borders.from){
             std_array[std_array_ind] = num;
             std_array_ind++;
+            flag_from = false;
         }
-        else if(borders.have_to && num >= borders.to){
+        if(borders.have_to && num >= borders.to){
             err_array[err_array_ind] = num;
             err_array_ind++;
+            flag_to = false;
         }
 
-        else {
+        if(flag_from && flag_to) {
             sorted_array[not_sorted_array_ind] = num;
             not_sorted_array[not_sorted_array_ind] = num;
             not_sorted_array_ind++;
